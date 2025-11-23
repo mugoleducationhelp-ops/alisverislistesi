@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alışveriş Listesi</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --font-body: 'Nunito', sans-serif;
+        }
+
+        /* --- THEME DEFINITIONS --- */
+        body.dark-theme {
+            --primary-blue: #00c6ff;
+            --secondary-blue: #0072ff;
+            --dark-bg: #0f2027;
+            --light-bg: #203a43;
+            --card-bg: rgba(10, 30, 60, 0.3);
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --text-primary: #f0f0f0;
+            --text-secondary: #ccc;
+            --border-color: rgba(255, 255, 255, 0.15);
+            --glow-color: rgba(0, 198, 255, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --primary-color: #00c6ff;
+            --primary-glow: rgba(0, 198, 255, 0.7);
+            --success-color: #009688;
+            --danger-color: #f44336;
+        }
+        
+        body.light-theme {
+            --primary-blue: #0072ff;
+            --secondary-blue: #0052d4;
+            --dark-bg: #e9eef2;
+            --light-bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --input-bg: #f1f5f8;
+            --text-primary: #212529;
+            --text-secondary: #5a5a5a;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --glow-color: rgba(0, 114, 255, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --primary-color: #0072ff;
+            --primary-glow: rgba(0, 114, 255, 0.7);
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+        }
+        
+        body.sepia-theme {
+            --primary-blue: #a5673f;
+            --secondary-blue: #8a5a44;
+            --dark-bg: #f4e8c1;
+            --light-bg: #fbf1d6;
+            --card-bg: rgba(253, 248, 226, 0.8);
+            --input-bg: #f8f0d9;
+            --text-primary: #5b4636;
+            --text-secondary: #7d6b5a;
+            --border-color: rgba(91, 70, 54, 0.15);
+            --glow-color: rgba(188, 143, 90, 0.5);
+            --shadow-color: rgba(91, 70, 54, 0.15);
+            --primary-color: #a5673f;
+            --primary-glow: rgba(165, 103, 63, 0.7);
+            --success-color: #6b8e23;
+            --danger-color: #cd5c5c;
+        }
+        
+        body.dracula-theme {
+            --primary-blue: #ff79c6;
+            --secondary-blue: #bd93f9;
+            --dark-bg: #282a36;
+            --light-bg: #20222b;
+            --card-bg: rgba(40, 42, 54, 0.5);
+            --input-bg: #343746;
+            --text-primary: #f8f8f2;
+            --text-secondary: #bd93f9;
+            --border-color: rgba(248, 248, 242, 0.1);
+            --glow-color: rgba(255, 121, 198, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --primary-color: #ff79c6;
+            --primary-glow: rgba(255, 121, 198, 0.7);
+            --success-color: #50fa7b;
+            --danger-color: #ff5555;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html { height: 100%; }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: var(--dark-bg);
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--dark-bg), var(--light-bg));
+            transition: background 0.5s ease;
+        }
+
+        .content-card {
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color); 
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 580px; 
+            width: 100%; 
+            box-shadow: 0 8px 32px var(--shadow-color);
+            animation: fadeInUp 0.6s ease-out forwards;
+            position: relative;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        body.dark-theme .theme-toggle {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        }
+
+        body.light-theme .theme-toggle {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px var(--glow-color);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-bottom: 35px;
+            opacity: 0.85;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 18px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px -5px var(--primary-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-30deg);
+            transition: left 0.8s ease;
+        }
+
+        .btn:hover::before {
+            left: 150%;
+        }
+
+        .list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .list-container::-webkit-scrollbar-track {
+            background: var(--input-bg);
+            border-radius: 10px;
+        }
+
+        .list-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            animation: slideIn 0.3s ease-out;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .list-item::before {
+            content: '';
+            position: absolute;
+            left: 16px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .list-item.completed::before {
+            background: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .list-item.completed::after {
+            content: '✓';
+            position: absolute;
+            left: 19px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .list-item:hover {
+            background: var(--card-bg);
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .list-item:active {
+            transform: translateX(3px) scale(0.98);
+        }
+
+        .list-item.completed .item-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+        
+        .item-number {
+            font-size: 1.05rem;
+            font-weight: 600; 
+            color: var(--primary-color); 
+            min-width: 25px; 
+            text-align: right;
+            margin-left: 25px;
+        }
+
+        .list-item.completed .item-number {
+            color: var(--text-secondary);
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+
+        .delete-btn {
+            padding: 8px 16px;
+            background: linear-gradient(45deg, #c0392b, var(--danger-color));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.98);
+        }
+
+        .footer-text {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 50px 20px;
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-copy {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            flex: 1;
+        }
+
+        .btn-copy:hover {
+            background: linear-gradient(45deg, #229954, #27ae60);
+            box-shadow: 0 0 20px -5px rgba(46, 204, 113, 0.7);
+        }
+
+        .btn-clear {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+            color: white;
+            border: none;
+            flex: 1;
+        }
+
+        .btn-clear:hover {
+            background: linear-gradient(45deg, #a93226, #c0392b);
+            box-shadow: 0 0 20px -5px rgba(231, 76, 60, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .content-card {
+                padding: 30px 25px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .input-container {
+                flex-direction: column;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .theme-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <button class="theme-toggle" id="themeToggle" title="Tema Değiştir">
+        🌙
+    </button>
+
+    <div class="background-container"></div>
+
+    <div class="content-card">
+        <h1>🛒 Alışveriş Listesi</h1>
+        <p class="subtitle">Alışveriş yapacaklarınızı düzenleyin ve takip edin</p>
+        
+        <div class="input-container">
+            <input type="text" id="itemInput" placeholder="Ürün ekle..." />
+            <button class="btn" onclick="addItem()">Ekle</button>
+        </div>
+
+        <div class="list-container" id="listContainer">
+            <div class="empty-message">Listeniz boş. Ürün ekleyerek başlayın!</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-copy" onclick="copyList()">Listeyi Kopyala</button>
+            <button class="btn btn-clear" onclick="clearAll()">Tümünü Temizle</button>
+        </div>
+
+        <div class="footer-text">
+            MuGöl EDUCATION tarafından yapılmıştır
+        </div>
+    </div>
+
+    <script>
+        let items = [];
+        let currentTheme = 'dark-theme';
+
+        // Tema yönetimi
+        const themeToggle = document.getElementById('themeToggle');
+        
+        function applyTheme(themeName) {
+            document.body.className = '';
+            document.body.classList.add(themeName);
+            currentTheme = themeName;
+            
+            // Emoji değiştir
+            if (themeName === 'dark-theme') {
+                themeToggle.textContent = '🌙';
+            } else {
+                themeToggle.textContent = '☀️';
+            }
+            
+            localStorage.setItem('shoppingListTheme', themeName);
+        }
+
+        // Tema toggle
+        themeToggle.addEventListener('click', () => {
+            const newTheme = currentTheme === 'dark-theme' ? 'light-theme' : 'dark-theme';
+            applyTheme(newTheme);
+        });
+
+        // Başlangıçta kaydedilmiş temayı yükle
+        const savedTheme = localStorage.getItem('shoppingListTheme');
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        }
+
+        // Toast bildirimi
+        const showToast = (icon, title) => {
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: icon,
+                title: title,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                background: "var(--card-bg)",
+                color: "var(--text-primary)"
+            });
+        };
+
+        // Veri yönetimi
+        function loadData() {
+            const saved = localStorage.getItem('shoppingListItems');
+            if (saved) {
+                items = JSON.parse(saved);
+                renderList();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('shoppingListItems', JSON.stringify(items));
+        }
+
+        function addItem() {
+            const input = document.getElementById('itemInput');
+            const text = input.value.trim();
+            
+            if (text === '') {
+                showToast('error', 'Lütfen bir ürün adı girin!');
+                return;
+            }
+
+            items.push({
+                id: Date.now(),
+                text: text,
+                completed: false
+            });
+
+            input.value = '';
+            saveData();
+            renderList();
+            showToast('success', 'Ürün eklendi!');
+        }
+
+        function toggleItem(id) {
+            const item = items.find(i => i.id === id);
+            if (item) {
+                item.completed = !item.completed;
+                saveData();
+                renderList();
+                if (item.completed) {
+                    showToast('success', 'Ürün tamamlandı!');
+                } else {
+                    showToast('info', 'Ürün yapılacaklara eklendi!');
+                }
+            }
+        }
+
+        function deleteItem(id) {
+            items = items.filter(i => i.id !== id);
+            saveData();
+            renderList();
+            showToast('success', 'Ürün silindi!');
+        }
+
+        function clearAll() {
+            if (items.length === 0) {
+                showToast('warning', 'Liste zaten boş!');
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Tüm listeyi temizlemek istediğinizden emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0072ff',
+                cancelButtonColor: '#f44336',
+                confirmButtonText: 'Evet, temizle!',
+                cancelButtonText: 'İptal',
+                background: "var(--card-bg)",
+                color: "var(--text-primary)"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    items = [];
+                    saveData();
+                    renderList();
+                    showToast('success', 'Liste temizlendi!');
+                }
+            });
+        }
+
+        function copyList() {
+            if (items.length === 0) {
+                showToast('warning', 'Liste boş! Kopyalanacak bir şey yok.');
+                return;
+            }
+
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('tr-TR', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+            });
+
+            let listText = `Bugünün Alışveriş Listesi\n${dateStr}\n\n`;
+            
+            items.forEach((item, index) => {
+                const itemNumber = index + 1;
+                listText += `${itemNumber}. ${item.text}\n`;
+            });
+
+            navigator.clipboard.writeText(listText).then(() => {
+                showToast('success', 'Liste kopyalandı!');
+            }).catch(() => {
+                showToast('error', 'Kopyalama başarısız oldu!');
+            });
+        }
+
+        function renderList() {
+            const container = document.getElementById('listContainer');
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-message">Listeniz boş. Ürün ekleyerek başlayın!</div>';
+                return;
+            }
+
+            container.innerHTML = items.map((item, index) => {
+                const itemNumber = index + 1;
+                
+                return `
+                    <div class="list-item ${item.completed ? 'completed' : ''}" onclick="toggleItem(${item.id})">
+                        <span class="item-number">${itemNumber}.</span> 
+                        <span class="item-text">${item.text}</span>
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteItem(${item.id})">Sil</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        document.getElementById('itemInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        // Sayfa yüklendiğinde verileri yükle
+        loadData();
+    </script>
+
+</body>
+</html>
